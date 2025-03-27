@@ -1,0 +1,47 @@
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'pharmacy_map' pharmacy.id %}">
+                    <i class="fas fa-map me-2"></i>Plan
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'analytics' pharmacy.id %}">
+                    <i class="fas fa-chart-bar me-2"></i>Analyses
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'pharmacy_products' pharmacy.id %}">
+                    <i class="fas fa-cubes me-2"></i>Produits
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'pharmacy_settings' pharmacy.id %}">
+                    <i class="fas fa-cog me-2"></i>Paramètres
+                </a>
+            </li>
+        </ul>
+        
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Vues spéciales</span>
+        </h6>
+        <ul class="nav flex-column mb-2">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'revenue_view' pharmacy.id %}">
+                    <i class="fas fa-money-bill-wave me-2"></i>Chiffre d'affaires
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'margin_view' pharmacy.id %}">
+                    <i class="fas fa-percentage me-2"></i>Taux de marge
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'lab_distribution' pharmacy.id %}">
+                    <i class="fas fa-flask me-2"></i>Répartition laboratoires
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

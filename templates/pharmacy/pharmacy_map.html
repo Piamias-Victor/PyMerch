@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Plan de la pharmacie {{ pharmacy.name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/pharmacy-map.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Plan de la pharmacie {{ pharmacy.name }}</h1>
+                <div>
+                    <button id="add-element-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter un élément
+                    </button>
+                    <button id="export-plan-btn" class="btn btn-secondary">
+                        <i class="fas fa-file-export"></i> Exporter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="toolbar">
+                <div class="element-selector">
+                    <select class="form-select" id="element-type-filter">
+                        <option value="all">Tous les éléments</option>
+                        <option value="SHELF">Rayons</option>
+                        <option value="TG">Têtes de Gondole</option>
+                        <option value="BAC">Bacs Soldeurs</option>
+                    </select>
+                </div>
+                
+                <div class="laboratory-selector">
+                    <select class="form-select" id="laboratory-filter">
+                        <option value="all">Tous les laboratoires</option>
+                        {% for laboratory in laboratories %}
+                        <option value="{{ laboratory.id }}">{{ laboratory.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="map-controls">
+                    <button class="btn btn-sm btn-outline-secondary" id="zoom-in-btn">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" id="zoom-out-btn">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" id="reset-view-btn">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <!-- Plan de la pharmacie -->
+            <div id="pharmacy-map" 
+                 data-pharmacy-id="{{ pharmacy.id }}" 
+                 data-width="{{ pharmacy.width }}" 
+                 data-height="{{ pharmacy.height }}">
+                <!-- Les éléments seront chargés dynamiquement par JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Panneau des détails (initialement caché) -->
+<div id="element-details-panel" class="hidden">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="element-title">Détails de l'élément</h3>
+        <button class="btn-close" id="close-details-btn"></button>
+    </div>
+    
+    <div class="element-info">
+        <p>Type: <span class="element-type"></span></p>
+        
+        <div class="form-group mb-3">
+            <label for="element-name-input">Nom:</label>
+            <input type="text" class="form-control" id="element-name-input">
+        </div>
+        
+        <div class="form-group mb-3">
+            <label for="laboratory-select">Laboratoire:</label>
+            <select class="form-select" id="laboratory-select">
+                <option value="">Aucun</option>
+                {% for laboratory in laboratories %}
+                <option value="{{ laboratory.id }}">{{ laboratory.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button class="btn btn-primary mb-4" id="save-element-btn">Enregistrer</button>
+    </div>
+    
+    <h4>Données commerciales</h4>
+    <div class="sales-data mb-4">
+        <div class="row">
+            <div class="col-6 mb-2">
+                <div class="data-card">
+                    <div class="card-label">Chiffre d'affaires</div>
+                    <div class="revenue-value">0.00 €</div>
+                </div>
+            </div>
+            <div class="col-6 mb-2">
+                <div class="data-card">
+                    <div class="card-label">Marge brute</div>
+                    <div class="profit-value">0.00 €</div>
+                </div>
+            </div>
+            <div class="col-6 mb-2">
+                <div class="data-card">
+                    <div class="card-label">Taux de marge</div>
+                    <div class="margin-value">0.00%</div>
+                </div>
+            </div>
+            <div class="col-6 mb-2">
+                <div class="data-card">
+                    <div class="card-label">Unités vendues</div>
+                    <div class="units-value">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn btn-outline-primary btn-sm mt-2" id="edit-sales-data-btn">
+            Modifier les données
+        </button>
+    </div>
+    
+    <h4>Produits</h4>
+    <div class="products-section mb-4">
+        <ul class="products-list list-group">
+            <!-- Liste des produits chargée dynamiquement -->
+        </ul>
+        
+        <button class="btn btn-outline-primary btn-sm mt-2" id="manage-products-btn">
+            Gérer les produits
+        </button>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un élément -->
+<div class="modal fade" id="add-element-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un nouvel élément</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-element-form">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="new-element-name" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="new-element-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-element-type" class="form-label">Type</label>
+                        <select class="form-select" id="new-element-type" required>
+                            <option value="">Sélectionnez un type</option>
+                            <option value="SHELF">Rayon</option>
+                            <option value="TG">Tête de Gondole</option>
+                            <option value="BAC">Bac Soldeur</option>
+                            <option value="ENTRANCE">Entrée</option>
+                            <option value="EXIT">Sortie</option>
+                            <option value="COUNTER">Comptoir</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-element-width" class="form-label">Largeur (px)</label>
+                        <input type="number" class="form-control" id="new-element-width" min="20" value="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-element-height" class="form-label">Hauteur (px)</label>
+                        <input type="number" class="form-control" id="new-element-height" min="20" value="60" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-element-laboratory" class="form-label">Laboratoire</label>
+                        <select class="form-select" id="new-element-laboratory">
+                            <option value="">Aucun</option>
+                            {% for laboratory in laboratories %}
+                            <option value="{{ laboratory.id }}">{{ laboratory.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="save-new-element-btn">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour gérer les produits -->
+<div class="modal fade" id="manage-products-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Gérer les produits</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-6">
+                        <h6>Produits disponibles</h6>
+                        <div class="form-group mb-2">
+                            <input type="text" class="form-control" id="product-search" placeholder="Rechercher...">
+                        </div>
+                        <ul class="list-group available-products" style="height: 300px; overflow-y: auto;">
+                            <!-- Liste des produits disponibles chargée dynamiquement -->
+                        </ul>
+                    </div>
+                    <div class="col-6">
+                        <h6>Produits sélectionnés</h6>
+                        <ul class="list-group selected-products" style="height: 340px; overflow-y: auto;">
+                            <!-- Liste des produits sélectionnés chargée dynamiquement -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="save-products-btn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour modifier les données de vente -->
+<div class="modal fade" id="edit-sales-data-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier les données commerciales</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="sales-data-form">
+                    <div class="mb-3">
+                        <label for="sales-revenue" class="form-label">Chiffre d'affaires (€)</label>
+                        <input type="number" class="form-control" id="sales-revenue" min="0" step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="sales-profit" class="form-label">Marge brute (€)</label>
+                        <input type="number" class="form-control" id="sales-profit" min="0" step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="sales-units" class="form-label">Unités vendues</label>
+                        <input type="number" class="form-control" id="sales-units" min="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="save-sales-data-btn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.11/dist/interact.min.js"></script>
+<script src="{% static 'js/pharmacy-map.js' %}"></script>
+{% endblock %}
