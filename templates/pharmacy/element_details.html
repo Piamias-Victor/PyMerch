@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails de l'élément - {{ element.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Détails de l'élément: {{ element.name }}</h1>
+                <a href="{% url 'pharmacy_map' element.pharmacy.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au plan
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations générales</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'update_element' element.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ element.name }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="element_type" class="form-label">Type</label>
+                            <select class="form-select" id="element_type" name="element_type">
+                                {% for type_code, type_name in element.ELEMENT_TYPES %}
+                                <option value="{{ type_code }}" {% if element.element_type == type_code %}selected{% endif %}>{{ type_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="laboratory" class="form-label">Laboratoire</label>
+                            <select class="form-select" id="laboratory" name="laboratory">
+                                <option value="">Aucun</option>
+                                {% for lab in laboratories %}
+                                <option value="{{ lab.id }}" {% if element.laboratory.id == lab.id %}selected{% endif %}>{{ lab.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="width" class="form-label">Largeur (px)</label>
+                                <input type="number" class="form-control" id="width" name="width" value="{{ element.width }}" min="20" required>
+                            </div>
+                            <div class="col">
+                                <label for="height" class="form-label">Hauteur (px)</label>
+                                <input type="number" class="form-control" id="height" name="height" value="{{ element.height }}" min="20" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="orientation" class="form-label">Orientation</label>
+                            <select class="form-select" id="orientation" name="orientation">
+                                <option value="horizontal" {% if element.orientation == 'horizontal' %}selected{% endif %}>Horizontale</option>
+                                <option value="vertical" {% if element.orientation == 'vertical' %}selected{% endif %}>Verticale</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Données commerciales</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'update_element_sales' element.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="data-card">
+                                    <div class="card-label">Chiffre d'affaires</div>
+                                    <div class="revenue-value">{{ element.revenue|floatformat:2 }} €</div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="data-card">
+                                    <div class="card-label">Marge brute</div>
+                                    <div class="profit-value">{{ element.profit|floatformat:2 }} €</div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="data-card">
+                                    <div class="card-label">Taux de marge</div>
+                                    <div class="margin-value">{{ element.margin_percentage|floatformat:2 }}%</div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="data-card">
+                                    <div class="card-label">Unités vendues</div>
+                                    <div class="units-value">{{ element.units_sold }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="revenue" class="form-label">Chiffre d'affaires (€)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="revenue" name="revenue" value="{{ element.revenue }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="profit" class="form-label">Marge brute (€)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="profit" name="profit" value="{{ element.profit }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="units_sold" class="form-label">Unités vendues</label>
+                            <input type="number" min="0" class="form-control" id="units_sold" name="units_sold" value="{{ element.units_sold }}">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Produits associés</h5>
+                    <a href="{% url 'element_products' element.id %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit"></i> Gérer
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if element.products.all %}
+                    <ul class="list-group">
+                        {% for product in element.products.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ product.name }}
+                            <span class="badge bg-primary rounded-pill">{{ product.price }} €</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">Aucun produit associé à cet élément.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

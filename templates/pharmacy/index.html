@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil - Merchandising Pharmacie{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>Gestion du merchandising de pharmacie</h1>
+            <p class="lead">Optimisez l'agencement et l'analyse des performances de votre pharmacie</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Mes pharmacies</h5>
+                    <a href="{% url 'create_pharmacy' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nouvelle pharmacie
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if pharmacies %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Dimensions</th>
+                                    <th>Date de création</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pharmacy in pharmacies %}
+                                <tr>
+                                    <td>{{ pharmacy.name }}</td>
+                                    <td>{{ pharmacy.width }} x {{ pharmacy.height }}</td>
+                                    <td>{{ pharmacy.created_at|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'pharmacy_map' pharmacy.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-map"></i> Plan
+                                            </a>
+                                            <a href="{% url 'analytics' pharmacy.id %}" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-chart-bar"></i> Analyses
+                                            </a>
+                                            <a href="{% url 'pharmacy_settings' pharmacy.id %}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-cog"></i> Paramètres
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p>Vous n'avez pas encore créé de pharmacie.</p>
+                        <a href="{% url 'create_pharmacy' %}" class="btn btn-primary mt-2">
+                            <i class="fas fa-plus"></i> Créer ma première pharmacie
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Laboratoires</h5>
+                </div>
+                <div class="card-body">
+                    <p>Gérez les laboratoires pharmaceutiques et leurs produits associés.</p>
+                    <a href="{% url 'laboratories' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-flask"></i> Voir les laboratoires
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Produits</h5>
+                </div>
+                <div class="card-body">
+                    <p>Consultez et gérez tous les produits de votre catalogue.</p>
+                    <a href="{% url 'products' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-cubes"></i> Voir les produits
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

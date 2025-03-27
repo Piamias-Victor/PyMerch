@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Paramètres - {{ pharmacy.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>Paramètres - {{ pharmacy.name }}</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations générales</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Nom</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger">
+                                {{ form.name.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="{{ form.width.id_for_label }}" class="form-label">Largeur (px)</label>
+                                {{ form.width }}
+                                {% if form.width.errors %}
+                                <div class="text-danger">
+                                    {{ form.width.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col">
+                                <label for="{{ form.height.id_for_label }}" class="form-label">Hauteur (px)</label>
+                                {{ form.height }}
+                                {% if form.height.errors %}
+                                <div class="text-danger">
+                                    {{ form.height.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            <a href="{% url 'pharmacy_map' pharmacy.id %}" class="btn btn-outline-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">Zone dangereuse</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">La suppression d'une pharmacie est définitive et entraînera la perte de tous les éléments associés.</p>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deletePharmacyModal">
+                        <i class="fas fa-trash-alt"></i> Supprimer cette pharmacie
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deletePharmacyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer la pharmacie "{{ pharmacy.name }}" ?</p>
+                <p class="text-danger">Cette action est irréversible !</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <a href="{% url 'delete_pharmacy' pharmacy.id %}" class="btn btn-danger">Supprimer</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

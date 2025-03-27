@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if view_type == 'revenue' %}Chiffre d'affaires
+    {% elif view_type == 'margin' %}Taux de marge
+    {% elif view_type == 'lab' %}Répartition laboratoires
+    {% endif %} - {{ pharmacy.name }}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/pharmacy-map.css' %}">
+<style>
+    /* Styles spécifiques pour les vues spéciales */
+    .special-view-container {
+        position: relative;
+    }
+    
+    .legend {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        z-index: 100;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        border-radius: 3px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>
+                    {% if view_type == 'revenue' %}Chiffre d'affaires
+                    {% elif view_type == 'margin' %}Taux de marge
+                    {% elif view_type == 'lab' %}Répartition laboratoires
+                    {% endif %} - {{ pharmacy.name }}
+                </h1>
+                <a href="{% url 'pharmacy_map' pharmacy.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au plan
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="special-view-container">
+                <!-- Plan de la pharmacie -->
+                <div id="pharmacy-map" 
+                     data-pharmacy-id="{{ pharmacy.id }}" 
+                     data-width="{{ pharmacy.width }}" 
+                     data-height="{{ pharmacy.height }}"
+                     data-view-type="{{ view_type }}">
+                    <!-- Les éléments seront chargés dynamiquement par JavaScript -->
+                </div>
+                
+                <!-- Légende -->
+                <div class="legend">
+                    <h6>Légende</h6>
+                    {% if view_type == 'revenue' %}
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #63be7b;"></div>
+                            <span>CA élevé (&gt; 1000€)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #a6d96a;"></div>
+                            <span>CA moyen (500€ - 1000€)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ffeb84;"></div>
+                            <span>CA faible (100€ - 500€)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f8696b;"></div>
+                            <span>CA très faible (&lt; 100€)</span>
+                        </div>
+                    {% elif view_type == 'margin' %}
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #63be7b;"></div>
+                            <span>Marge élevée (&gt; 30%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #a6d96a;"></div>
+                            <span>Marge moyenne (20% - 30%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ffeb84;"></div>
+                            <span>Marge faible (10% - 20%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f8696b;"></div>
+                            <span>Marge très faible (&lt; 10%)</span>
+                        </div>
+                    {% elif view_type == 'lab' %}
+                        <!-- Sera généré dynamiquement par JavaScript -->
+                        <div id="lab-legend"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.11/dist/interact.min.js"></script>
+<script src="{% static 'js/special-view.js' %}"></script>
+{% endblock %}
